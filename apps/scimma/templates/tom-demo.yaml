@@ -6,7 +6,7 @@ metadata:
 spec:
   destination:
     server: https://kubernetes.default.svc
-    namespace: tom-demo
+    namespace: scimma-tom-demo
   project: nsf-muses
   source:
     path: charts/tom-demo
