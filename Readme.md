@@ -21,4 +21,4 @@ This repo contains the source code and deployment configuration for a prototype 
 
 The hop.SCiMMA service provides a centralized hub for publishing and subscribing to access-controlled alert streams via the Hopskotch protocol.
 
-![architecture](docs/SCiMMA_architecture.drawio.png)
+<img src="./docs/architecture.drawio.png">
