@@ -1,6 +1,6 @@
-# SCiMMA TOM Demo
+# SCiMMA Alert Integration Demo
 
-## Overview
+## Description
 
 This repo contains the source code and deployment configuration for a prototype system designed for an end-to-end demonstration that will:
 
@@ -19,6 +19,18 @@ This repo contains the source code and deployment configuration for a prototype 
 
 ## Architecture
 
-The hop.SCiMMA service provides a centralized hub for publishing and subscribing to access-controlled alert streams via the Hopskotch protocol.
+### Overview
+
+The hop.SCiMMA service provides a centralized hub for publishing and subscribing to access-controlled alert streams via the Hopskotch protocol. Two 
 
 <img src="./docs/architecture.drawio.png">
+
+### Broker
+
+<img src="./docs/broker.drawio.png">
+
+## Links and references
+
+* [SCiMMA public talk with Electromagnetic Counterpart Identification (El-CID) demo Jupyter notebooks](https://cloud.musesframework.io/s/X6N3aHdDr3tq3zX)
+* [El-CID: A filter for Gravitational-wave Electromagnetic Counterpart Identification](https://arxiv.org/abs/2108.04166)
+* [TOM Toolkit docs](https://tom-toolkit.readthedocs.io/en/latest/introduction/getting_started.html)
