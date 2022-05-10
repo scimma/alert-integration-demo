@@ -1,0 +1,7 @@
+*ipynb_checkpoints
+.astropy/
+.bash_history
+.cache/
+.keras/
+.python_history
+__pycache__/
