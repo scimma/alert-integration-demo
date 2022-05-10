@@ -14,6 +14,7 @@ ARG UID_NUMBER=1006
 RUN apt-get update --fix-missing
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 
+RUN apt-get install -y build-essential
 RUN apt-get install -y wget emacs git
 
 # Add $BROKER_USER as user and create groups wheel and spt
