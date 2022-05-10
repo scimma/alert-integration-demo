@@ -44,9 +44,11 @@ RUN mkdir -p ${MINICONDA_PATH} \
 # Start the env and add channels and base dependencies
 RUN . $MINICONDA_PATH/bin/activate && \
     conda config --add channels conda-forge  && \
+    conda install -y pip && \
     conda install -c conda-forge -y astropy healpy
 
-RUN pip install -U \
+RUN . $MINICONDA_PATH/bin/activate && \
+    pip install -U \
     ligo.skymap \
     keras-tcn==3.2.1 \
     git+https://github.com/deepchatterjeeligo/astrorapid.git@ab8582e17015a55b9b3528a7dc320a3cfaf7d250
