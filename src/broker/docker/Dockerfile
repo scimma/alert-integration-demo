@@ -11,11 +11,10 @@ ARG MINICONDA_PATH=${BROKER_HOME}/miniconda
 ARG MINICONDA_INSTALL_FILE=Miniconda3-py38_4.10.3-Linux-x86_64.sh
 ARG UID_NUMBER=1006
 
-RUN apt-get update --fix-missing
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
-
-RUN apt-get install -y build-essential
-RUN apt-get install -y wget emacs git
+RUN apt-get update --fix-missing && \
+    DEBIAN_FRONTEND=noninteractive && \
+    apt-get install -y --no-install-recommends tzdata && \
+    apt-get install -y build-essential wget emacs git
 
 # Add $BROKER_USER as user and create groups wheel and spt
 RUN useradd -ms /bin/bash -u ${UID_NUMBER} $BROKER_USER && \
@@ -53,3 +52,6 @@ RUN . $MINICONDA_PATH/bin/activate && \
     ligo.skymap \
     keras-tcn==3.2.1 \
     git+https://github.com/deepchatterjeeligo/astrorapid.git@ab8582e17015a55b9b3528a7dc320a3cfaf7d250
+
+# Start with the right miniconda environment
+RUN echo "source $MINICONDA_PATH/bin/activate" >> $HOME/.bashrc
