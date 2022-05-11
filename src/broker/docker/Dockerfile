@@ -45,7 +45,7 @@ RUN mkdir -p ${MINICONDA_PATH} \
 RUN . $MINICONDA_PATH/bin/activate && \
     conda config --add channels conda-forge  && \
     conda install -y pip && \
-    conda install -c conda-forge -y astropy healpy
+    conda install -c conda-forge -y astropy healpy click
 
 RUN . $MINICONDA_PATH/bin/activate && \
     pip install -U \
