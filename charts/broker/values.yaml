@@ -3,7 +3,3 @@ deployment:
     repository: "docker.io/menanteau/deep_broker"
     tag: "latest"
     pullPolicy: "Always"
-  resources:
-    requests:
-      cpu: "100m"
-      memory: "500Mi"
