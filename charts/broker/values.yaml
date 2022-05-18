@@ -3,10 +3,6 @@ deployment:
     repository: "docker.io/menanteau/deep_broker"
     tag: "latest"
     pullPolicy: "Always"
-  annotations:
-    keel.sh/policy: "force"
-    keel.sh/trigger: "poll"
-    keel.sh/pollSchedule: "@every 10m"
   resources:
     requests:
       cpu: "100m"
