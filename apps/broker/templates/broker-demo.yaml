@@ -1,12 +1,12 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: tom-demo
+  name: broker-demo
   namespace: argo-cd
 spec:
   destination:
     server: https://kubernetes.default.svc
-    namespace: scimma-tom-demo
+    namespace: scimma-broker-demo
   project: antares-at-ncsa
   source:
     path: charts/tom-demo
