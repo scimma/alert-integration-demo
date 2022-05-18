@@ -1,0 +1,9 @@
+apiVersion: v2
+name: broker
+description: SCiMMA Broker
+type: application
+version: 0.0.1
+dependencies:
+- name: mariadb
+  version: 10.5.x
+  repository: https://charts.bitnami.com/bitnami
