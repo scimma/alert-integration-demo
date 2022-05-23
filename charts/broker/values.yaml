@@ -3,4 +3,5 @@ deployment:
     repository: "docker.io/menanteau/deep_broker"
     tag: "latest"
     pullPolicy: "Always"
+    command: "sleep 700d"
   replicas: 1
