@@ -9,7 +9,7 @@ spec:
     namespace: scimma-broker-demo
   project: antares-at-ncsa
   source:
-    path: charts/tom-demo
+    path: charts/broker
     repoURL: https://github.com/scimma/alert-integration-demo.git
     targetRevision: main
   syncPolicy:
