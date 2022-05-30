@@ -28,8 +28,8 @@ securityContext:
 
 postgresql:
   hostname: "tom-demo-postgresql"
-  postgresqlUsername: tomdemo
-  postgresqlDatabase: tomdemo
+  postgresqlUsername: alertsdemo
+  postgresqlDatabase: alertsdemo
   existingSecret: "tom-demo-secrets"
   persistence:
     enabled: true
