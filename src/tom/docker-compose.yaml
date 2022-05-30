@@ -1,0 +1,113 @@
+version: '3'
+
+networks:
+  internal:
+    external: false
+
+volumes:
+  postgres: {}
+  waitforit: {}
+
+services:
+  db:
+    image: 'postgres:latest'
+    env_file: .env
+    ports:
+      - 5432:5432
+    networks:
+      - internal
+    volumes:
+      - postgres:/var/lib/postgresql
+  alert-demo-init-db:
+    image: 'postgres:latest'
+    env_file: .env
+    depends_on:
+      - db
+    networks:
+      - internal
+    command:
+      - sh
+      - -c
+      - >
+        until pg_isready \
+            --username=${POSTGRES_USER} \
+            --dbname=${POSTGRES_DB} \
+            --host=${DB_HOST} \
+            --port=5432;
+          do echo waiting for database;
+          sleep 2;
+          done;
+          touch /tmp/db_ready;
+    volumes:
+      - waitforit:/tmp
+  alert-demo-init-django-migrate:
+    image: alert-tom
+    build:
+      context: .
+    env_file: .env
+    depends_on:
+      - db
+      - alert-demo-init-db
+    networks:
+      - internal
+    command:
+      - '/bin/bash'
+      - '-c'
+      - >
+        while [[ ! -f /tmp/db_ready ]]; do
+          echo waiting for database...;
+          sleep 2;
+        done;
+        python manage.py migrate && python manage.py makemigrations && touch /tmp/migration_complete
+    volumes:
+      - ./alerts_demo:/home/worker/alerts_demo
+      - waitforit:/tmp
+  alert-demo-init-django-createsuperuser:
+    image: alert-tom
+    build:
+      context: .
+    env_file: .env
+    depends_on:
+      - db
+      - alert-demo-init-db
+      - alert-demo-init-django-migrate
+    networks:
+      - internal
+    command:
+      - '/bin/bash'
+      - '-c'
+      - >
+        while [[ ! -f /tmp/migration_complete ]]; do
+          echo waiting for database migration...;
+          sleep 2;
+        done;
+        bash provisionsuperuser.sh && touch /tmp/superuser_created
+    volumes:
+      - ./alerts_demo:/home/worker/alerts_demo
+      - waitforit:/tmp
+  alert-demo:
+    image: alert-tom
+    build:
+      context: .
+    env_file: .env
+    depends_on:
+      - db
+      - alert-demo-init-db
+      - alert-demo-init-django-migrate
+      - alert-demo-init-django-createsuperuser
+    ports:
+      - 8000:8000
+    networks:
+      - internal
+    command:
+      - '/bin/bash'
+      - '-c'
+      - >
+        while [[ ! -f /tmp/superuser_created ]]; do
+          echo waiting for createsuperuser...;
+          sleep 2;
+        done;
+        python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./alerts_demo:/home/worker/alerts_demo
+      - waitforit:/tmp
