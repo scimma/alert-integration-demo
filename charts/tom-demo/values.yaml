@@ -27,7 +27,7 @@ securityContext:
   runAsGroup: 1000
 
 postgresql:
-  hostname: "des-iam-postgresql"
+  hostname: "tom-demo-postgresql"
   postgresqlUsername: tomdemo
   postgresqlDatabase: tomdemo
   existingSecret: "tom-demo-secrets"
