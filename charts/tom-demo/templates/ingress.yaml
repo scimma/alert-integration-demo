@@ -1,16 +1,8 @@
 {{- if .Values.ingress.enabled -}}
-{{- $fullName := include "tom.fullname" . -}}
-{{- $svcPort := .Values.service.port -}}
-{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
-apiVersion: extensions/v1beta1
-{{- end }}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
-  labels:
-    {{- include "tom.labels" . | nindent 4 }}
+  name: {{ $.Release.Name }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -34,8 +26,8 @@ spec:
         {{- range .paths }}
           - path: {{ . }}
             backend:
-              serviceName: {{ $fullName }}
-              servicePort: {{ $svcPort }}
+              serviceName: {{ $.Release.Name }}
+              servicePort: 80
         {{- end }}
   {{- end }}
 {{- end }}
