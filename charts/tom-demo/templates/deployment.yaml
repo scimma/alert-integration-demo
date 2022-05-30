@@ -1,0 +1,193 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  strategy:
+    type: RollingUpdate
+  replicas: {{ .Values.replicas | default 1 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{ .Release.Name }}
+              topologyKey: "kubernetes.io/hostname"
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Mi
+        - name: static
+          emptyDir:
+            sizeLimit: 512Mi
+        - name: nginx-confd
+          configMap:
+            name: {{ .Release.Name }}
+        - name: nginx-var-cache-nginx
+          emptyDir:
+        - name: nginx-var-run
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Mi
+      initContainers:
+      # wait for database to become ready
+      - name: check-db-ready
+        image: "postgres:11.2-alpine"
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - -c
+        - >
+          until pg_isready \
+              --username={{ .Values.postgresql.postgresqlUsername | quote }} \
+              --dbname={{ .Values.postgresql.postgresqlDatabase | quote }} \
+              --host={{ .Values.postgresql.hostname | quote }} \
+              --port=5432;
+            do echo waiting for database;
+            sleep 2;
+            done;
+      - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        name: django-apply-db-migrations
+        command:
+        - python
+        - manage.py
+        - migrate
+        - --no-input
+        env:
+          {{- include "tom.backendEnv" . | nindent 10 }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+            readOnly: false
+      - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        name: django-collectstatic
+        command:
+        - python
+        - manage.py
+        - collectstatic
+        - --no-input
+        env:
+          {{- include "tom.backendEnv" . | nindent 10 }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+            readOnly: false
+          - name: static
+            mountPath: /static
+            readOnly: false
+      {{- if .Values.django.superuser.autocreate }}
+      - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        name: django-createsuperuser
+        command:
+        - '/bin/bash'
+        - '-c'
+        - 'bash provisionsuperuser.sh'
+        env:
+          {{- include "tom.backendEnv" . | nindent 10 }}
+          - name: DJANGO_SUPERUSER_DATABASE
+            value: {{ .Values.django.superuser.database | quote }}
+          {{- if .Values.django.superuser.credentials.existingSecret }}
+          - name: DJANGO_SUPERUSER_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.django.superuser.credentials.existingSecret | quote }}
+                key: {{ .Values.django.superuser.credentials.usernameKey | quote }}
+          - name: DJANGO_SUPERUSER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.django.superuser.credentials.existingSecret | quote }}
+                key: {{ .Values.django.superuser.credentials.passwordKey | quote }}
+          - name: DJANGO_SUPERUSER_EMAIL
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.django.superuser.credentials.existingSecret | quote }}
+                key: {{ .Values.django.superuser.credentials.emailKey | quote }}
+          {{- else }}
+          - name: DJANGO_SUPERUSER_USERNAME
+            value: {{ .Values.django.superuser.credentials.username | quote }}
+          - name: DJANGO_SUPERUSER_PASSWORD
+            value: {{ .Values.django.superuser.credentials.password | quote }}
+          - name: DJANGO_SUPERUSER_EMAIL
+            value: {{ .Values.django.superuser.credentials.email | quote }}
+          {{- end }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+      {{- end }}
+      containers:
+      - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        name: tom
+        command:
+          - gunicorn
+          - --bind=0.0.0.0:8000
+          - --worker-class=gevent
+          - --workers={{ .Values.gunicornWorkers | default 2 }}
+          - --timeout={{ .Values.gunicornTimeout | default 300 }}
+          - --access-logfile=-
+          - --error-logfile=-
+          - alerts_demo.wsgi
+        env:
+          {{- include "tom.backendEnv" . | nindent 10 }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+            readOnly: false
+          - name: static
+            mountPath: /static
+            readOnly: true
+      - name: nginx
+        image: "{{ .Values.nginx.image.repository }}:{{ .Values.nginx.image.tag }}"
+        imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+        livenessProbe:
+          initialDelaySeconds: 15
+          timeoutSeconds: 3
+          httpGet:
+            path: /healthz
+            port: http
+        readinessProbe:
+          initialDelaySeconds: 15
+          timeoutSeconds: 3
+          httpGet:
+            path: /healthz
+            port: http
+        securityContext:
+          {{- toYaml .Values.nginx.securityContext | nindent 10 }}
+        resources:
+          {{- toYaml .Values.nginx.resources | nindent 10 }}
+        volumeMounts:
+          - name: nginx-confd
+            mountPath: /etc/nginx/conf.d
+            readOnly: true
+          - name: static
+            mountPath: /static
+            readOnly: true
+          - name: nginx-var-cache-nginx
+            mountPath: /var/cache/nginx
+            readOnly: false
+          - name: nginx-var-run
+            mountPath: /var/run
+            readOnly: false

@@ -4,6 +4,6 @@ description: SCiMMA TOM demonstration
 type: application
 version: 0.0.1
 dependencies:
-- name: mariadb
-  version: 10.5.x
+- name: postgresql
+  version: ~9.3.0
   repository: https://charts.bitnami.com/bitnami

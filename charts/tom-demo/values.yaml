@@ -1,0 +1,77 @@
+replicas: 1
+image:
+  repository: registry.gitlab.com/antares-at-ncsa/kubernetes/scimma-tom-demo
+  tag: latest
+django:
+  debug: false
+  superuser:
+    autocreate: true
+    database: default
+    credentials:
+      ## If existingSecret is not empty, the username, password, and email will be taken from the secret
+      username: ""
+      password: ""
+      email: ""
+      existingSecret: tom-demo-secrets
+      usernameKey: django-admin-username
+      passwordKey: django-admin-password
+      emailKey: django-admin-email
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+
+postgresql:
+  hostname: "des-iam-postgresql"
+  postgresqlUsername: tomdemo
+  postgresqlDatabase: tomdemo
+  existingSecret: "tom-demo-secrets"
+  persistence:
+    enabled: true
+    existingClaim: "tom-demo-db-pvc"
+    accessModes:
+    - ReadWriteMany
+  volumePermissions:
+    enabled: true
+
+ingress:
+  enabled: true
+  basePath: "tom"
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+  hosts:
+    - host: "antares.ncsa.illinois.edu"
+      paths: ["/tom"]
+  tls:
+    - hosts:
+      - "antares.ncsa.illinois.edu"
+      secretName: "antares-ncsa-illinois-edu-tls"
+
+
+# NGINX image (static files webserver)
+nginx:
+  image:
+    repository: "nginx"
+    tag: "1.16-alpine"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
