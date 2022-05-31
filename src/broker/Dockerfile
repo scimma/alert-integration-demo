@@ -33,8 +33,6 @@ ENV USER $BROKER_USER
 ENV HOME /home/$BROKER_USER
 ENV SHELL /bin/bash
 
-COPY . broker_files/
-
 # Conda installation, using python38
 RUN mkdir -p ${MINICONDA_PATH} \
     && cd ${MINICONDA_PATH} \
@@ -57,6 +55,10 @@ RUN . $MINICONDA_PATH/bin/activate && \
     keras-tcn==3.2.1 \
     git+https://github.com/deepchatterjeeligo/astrorapid.git@ab8582e17015a55b9b3528a7dc320a3cfaf7d250
 
-# Start with the right miniconda environment
-RUN echo "source $MINICONDA_PATH/bin/activate" >> $HOME/.bashrc
+# Include Deep's scripts into the image
+#RUN mkdir $HOME/broker_files
+COPY broker_files broker_files
 
+# Start with the right miniconda environment
+RUN echo "export PYTHONPATH=${PYTHONPATH}:$HOME/broker_files" >> $HOME/.bashrc
+RUN echo "source $MINICONDA_PATH/bin/activate" >> $HOME/.bashrc
