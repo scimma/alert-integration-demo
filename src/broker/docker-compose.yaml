@@ -24,7 +24,7 @@ services:
     #    touch /tmp/db_ready;
 
   deep_broker:
-    image: deep_broker
+    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
     build: ./
     depends_on:
       - my-mariadb
@@ -32,14 +32,17 @@ services:
     volumes:
       - waitforit:/tmp
     env_file: .env
-    environment:
-      - PYTHONPATH=/home/broker/broker_files/:${PYTHONPATH}
+#    environment:
+#      - PYTHONPATH=/home/broker/broker_files/:${PYTHONPATH}
     command:
-      - /bin/bash
-      - -c
+      - '/bin/bash'
+      - '-c'
       - >
         sleep 5;
-        /home/broker/miniconda/bin/python broker_files/init_tables.py
+        init_tables.py
+
+  #      echo $PYTHONPATH
+      #  init_tables.py
       #- '/bin/bash'
       #- '-c'
       #- >

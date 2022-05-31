@@ -1,5 +1,6 @@
-import os
+#!/usr/bin/env python3
 
+import os
 import db_utils
 
 print("Initializing tables...")

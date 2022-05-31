@@ -61,4 +61,10 @@ COPY broker_files broker_files
 
 # Start with the right miniconda environment
 RUN echo "export PYTHONPATH=${PYTHONPATH}:$HOME/broker_files" >> $HOME/.bashrc
+RUN echo "export PATH=${PATH}:$HOME/broker_files" >> $HOME/.bashrc
 RUN echo "source $MINICONDA_PATH/bin/activate" >> $HOME/.bashrc
+
+# Use entrypoint script to start with conda and spt_cutter initialized
+COPY --chown=${BROKER_USER}:${BROKER_USER} startup.sh .startup.sh
+RUN chmod a+x .startup.sh
+ENTRYPOINT ["bash",".startup.sh"]
