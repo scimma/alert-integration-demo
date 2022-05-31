@@ -204,8 +204,8 @@ DATE_FORMAT = 'Y-m-d'
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = f'''/{base_path}{base_path_trailing_slash}static/'''
-STATIC_ROOT = os.path.join(BASE_DIR, '_static')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = f'''/static/'''
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'data')
 MEDIA_URL = '/data/'
 
