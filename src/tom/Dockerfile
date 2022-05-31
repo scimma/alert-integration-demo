@@ -17,3 +17,7 @@ RUN pip install --user --no-cache-dir -r requirements.txt
 
 COPY --chown=worker:worker alerts_demo/ alerts_demo/
 WORKDIR /home/worker/alerts_demo
+
+USER root
+RUN chown 1000:1000 /tmp
+USER worker
