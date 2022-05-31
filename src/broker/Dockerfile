@@ -33,6 +33,8 @@ ENV USER $BROKER_USER
 ENV HOME /home/$BROKER_USER
 ENV SHELL /bin/bash
 
+COPY . broker_files/
+
 # Conda installation, using python38
 RUN mkdir -p ${MINICONDA_PATH} \
     && cd ${MINICONDA_PATH} \
@@ -43,15 +45,18 @@ RUN mkdir -p ${MINICONDA_PATH} \
 
 # Start the env and add channels and base dependencies
 RUN . $MINICONDA_PATH/bin/activate && \
+    conda update -n base -c defaults conda && \
     conda config --add channels conda-forge  && \
     conda install -y pip && \
     conda install -c conda-forge -y astropy healpy click
 
 RUN . $MINICONDA_PATH/bin/activate && \
     pip install -U \
+    mysql-connector-python-rf \
     ligo.skymap \
     keras-tcn==3.2.1 \
     git+https://github.com/deepchatterjeeligo/astrorapid.git@ab8582e17015a55b9b3528a7dc320a3cfaf7d250
 
 # Start with the right miniconda environment
 RUN echo "source $MINICONDA_PATH/bin/activate" >> $HOME/.bashrc
+
