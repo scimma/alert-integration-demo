@@ -41,6 +41,7 @@ postgresql:
 
 ingress:
   enabled: true
+  hostname: antares.ncsa.illinois.edu
   basePath: "tom"
   annotations:
     kubernetes.io/tls-acme: "true"
