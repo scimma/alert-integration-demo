@@ -17,6 +17,19 @@ django:
       passwordKey: django-admin-password
       emailKey: django-admin-email
 
+oidc:
+  enabled: true
+  existingSecret: "tom-demo-secrets"
+  authorize_url: "https://keycloak.antares.ncsa.illinois.edu/auth/realms/antares/protocol/openid-connect/auth"
+  token_url: "https://keycloak.antares.ncsa.illinois.edu/auth/realms/antares/protocol/openid-connect/token"
+  userdata_url: "https://keycloak.antares.ncsa.illinois.edu/auth/realms/antares/protocol/openid-connect/userinfo"
+  scopes: "openid profile email"
+  login_url_path: "oidc"
+  jwksEndpoint: "https://keycloak.antares.ncsa.illinois.edu/auth/realms/antares/protocol/openid-connect/certs"
+  signingAlgorithm: "RS256"
+  redirectUrl: "https://antares.ncsa.illinois.edu/tom"
+  redirectPostLogoutUrl: "https://antares.ncsa.illinois.edu/tom"
+
 securityContext:
   capabilities:
     drop:
