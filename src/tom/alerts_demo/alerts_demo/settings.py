@@ -148,9 +148,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
@@ -182,6 +179,11 @@ OIDC_OP_JWKS_ENDPOINT = os.environ.get('OIDC_OP_JWKS_ENDPOINT', '')
 # OIDC_USERNAME_ALGO
 # ref: https://mozilla-django-oidc.readthedocs.io/en/stable/installation.html#generating-usernames
 OIDC_USERNAME_ALGO = 'alerts_demo.auth_backends.generate_username'
+
+# SESSION_ENGINE
+# ref: https://github.com/mozilla/mozilla-django-oidc/issues/435#issuecomment-1036372844
+# ref: https://docs.djangoproject.com/en/4.0/topics/http/sessions/
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
