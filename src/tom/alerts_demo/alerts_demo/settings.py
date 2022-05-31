@@ -38,8 +38,8 @@ except:
 
 HOSTNAME = os.environ['DJANGO_HOSTNAME']
 ALLOWED_HOSTS = [HOSTNAME]
-# CSRF_TRUSTED_ORIGINS = [f'''https://{HOSTNAME}''']
-#CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = [f'''https://{HOSTNAME}''']
+CSRF_COOKIE_SECURE = True
 
 
 # Application definition
