@@ -27,8 +27,8 @@ oidc:
   login_url_path: "oidc"
   jwksEndpoint: "https://keycloak.antares.ncsa.illinois.edu/auth/realms/antares/protocol/openid-connect/certs"
   signingAlgorithm: "RS256"
-  redirectUrl: "https://antares.ncsa.illinois.edu/tom"
-  redirectPostLogoutUrl: "https://antares.ncsa.illinois.edu/tom"
+  redirectUrl: "https://antares.ncsa.illinois.edu/tom/"
+  redirectPostLogoutUrl: "https://antares.ncsa.illinois.edu/tom/"
 
 securityContext:
   capabilities:

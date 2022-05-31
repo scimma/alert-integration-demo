@@ -180,6 +180,8 @@ OIDC_OP_JWKS_ENDPOINT = os.environ.get('OIDC_OP_JWKS_ENDPOINT', '')
 # ref: https://mozilla-django-oidc.readthedocs.io/en/stable/installation.html#generating-usernames
 OIDC_USERNAME_ALGO = 'alerts_demo.auth_backends.generate_username'
 
+ALLOW_LOGOUT_GET_METHOD = True
+
 # SESSION_ENGINE
 # ref: https://github.com/mozilla/mozilla-django-oidc/issues/435#issuecomment-1036372844
 # ref: https://docs.djangoproject.com/en/4.0/topics/http/sessions/
