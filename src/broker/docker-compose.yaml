@@ -7,21 +7,9 @@ services:
     image: mariadb:10
     restart: always
     env_file: .env
-    volumes:
-      - waitforit:/tmp
     ports:
       - 8080:8080
       - 3306:3306
-    #command:
-    #  - sh
-    #  - -c
-    #  - >
-    #    sleep 5;
-    #    mysqladmin ping \
-    #        --user=${MARIADB_USER} \
-    #        --password=${MARIADB_PASSWORD} \
-    #        --port=3306;
-    #    touch /tmp/db_ready;
 
   deep_broker:
     image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
@@ -29,11 +17,7 @@ services:
     depends_on:
       - my-mariadb
     container_name: deep_broker
-    volumes:
-      - waitforit:/tmp
     env_file: .env
-#    environment:
-#      - PYTHONPATH=/home/broker/broker_files/:${PYTHONPATH}
     command:
       - '/bin/bash'
       - '-c'
@@ -41,13 +25,16 @@ services:
         sleep 5;
         init_tables.py
 
-  #      echo $PYTHONPATH
-      #  init_tables.py
-      #- '/bin/bash'
-      #- '-c'
-      #- >
-      #  while [[ ! -f /tmp/db_ready ]]; do
-      #    echo waiting for database;
-      #    sleep 2;
-      #  done;
-      #  python init_tables.py;
+  gw170817_ingestor:
+    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
+    build: ./
+    depends_on:
+      - deep_broker
+    container_name: gw170817_ingestor
+    env_file: .env
+    command:
+      - '/bin/bash'
+      - '-c'
+      - >
+        sleep 6;
+        gw170817_ingest.py
