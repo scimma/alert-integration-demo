@@ -1,4 +1,7 @@
 import mysql.connector
+import utils
+
+log = utils.get_logger(__name__)
 
 class DbConnector:
 
@@ -25,6 +28,7 @@ class DbConnector:
             )
             # Get database cursor object
             self.cur = self.cnx.cursor()
+            log.info("Opened database connection")
 
     def close_db_connection(self):
         if self.cnx != None and self.cur != None:
@@ -35,6 +39,7 @@ class DbConnector:
                 self.cnx.close()
                 self.cur = None
                 self.cnx = None
+                log.info("Closed database connection")
             except Exception as e:
                 error = str(e).strip()
                 self.cur = None

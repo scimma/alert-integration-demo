@@ -1,4 +1,5 @@
 import json
+import logging
 import pathlib
 
 from astropy.coordinates import SkyCoord
@@ -169,3 +170,15 @@ def get_data_for_gw170817(instrument, lim_mag, num_obs=-1, skip_every=1):
     return (mjd[::skip_every][:num_obs], flux[::skip_every][:num_obs],
             fluxerr[::skip_every][:num_obs], passbands[::skip_every][:num_obs],
             photflag[::skip_every][:num_obs], ra, dec, objid, redshift, mwebv)
+
+
+def get_logger(logger_name, fmt='%(asctime)s [%(levelname)s] '
+                                '%(name)s: %(message)s'):
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter(fmt)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.INFO)
+    logger.addHandler(stream_handler)
+    return logger

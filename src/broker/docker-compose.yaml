@@ -27,17 +27,18 @@ services:
         sleep 1;
         gw170817_ingest.py
 
-  # gw170817_ingestor:
-  #   image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
-  #   build: ./
-  #   depends_on:
-  #     - my-mariadb
-  #     - deep_broker
-  #   container_name: gw170817_ingestor
-  #   env_file: .env
-  #   command:
-  #     - '/bin/bash'
-  #     - '-c'
-  #     - >
-  #       sleep 6;
-  #       gw170817_ingest.py
+  gw170817_classifier:
+    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
+    build: ./
+    depends_on:
+      - my-mariadb
+      - deep_broker
+    container_name: gw170817_classifier
+    env_file: .env
+    command:
+      - '/bin/bash'
+      - '-c'
+      - >
+        sleep 30;
+        init_results_table.py
+        elcid.py --help
