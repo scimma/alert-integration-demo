@@ -38,12 +38,20 @@ spec:
         - name: nginx-confd
           configMap:
             name: {{ .Release.Name }}
+        - name: copy-hop-auth
+          configMap:
+            name: {{ .Release.Name }}-copy-hop-auth
         - name: nginx-var-cache-nginx
           emptyDir:
         - name: nginx-var-run
           emptyDir:
             medium: Memory
             sizeLimit: 16Mi
+        - name: hop-config
+          emptyDir: {}
+        - name: hop-auth
+          secret:
+            secretName: tom-demo-secrets
       initContainers:
       # wait for database to become ready
       - name: check-db-ready
@@ -132,6 +140,28 @@ spec:
         securityContext:
           {{- toYaml .Values.securityContext | nindent 10 }}
       {{- end }}
+      ## The hop auth.toml file must be chmod to 0600
+      - image: ubuntu:20.04
+        name: init-hop-auth
+        command:
+        - /bin/bash
+        - -c
+        - bash /tmp/copy_auth.sh && touch /tmp/hop_auth_ready
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+            readOnly: false
+          - name: hop-config
+            mountPath: /home/worker/.config/hop
+            readOnly: false
+          - name: hop-auth
+            mountPath: /tmp/auth.toml
+            subPath: "auth.toml"
+            readOnly: true
+          - name: copy-hop-auth
+            mountPath: /tmp/copy_auth.sh
+            subPath: "copy_auth.sh"
+            readOnly: true
       containers:
       - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         name: tom
@@ -154,6 +184,9 @@ spec:
             readOnly: false
           - name: static
             mountPath: /static
+            readOnly: true
+          - name: hop-auth
+            mountPath: /
             readOnly: true
       - name: nginx
         image: "{{ .Values.nginx.image.repository }}:{{ .Values.nginx.image.tag }}"
@@ -190,4 +223,7 @@ spec:
             readOnly: false
           - name: nginx-var-run
             mountPath: /var/run
+            readOnly: false
+          - name: hop-config
+            mountPath: /home/worker/.config/hop
             readOnly: false
