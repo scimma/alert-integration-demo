@@ -1,0 +1,10 @@
+{
+  "type": "alerts-integration-demo",
+  "mag": 10,
+  "dec": -20,
+  "id": 1,
+  "ra": 32,
+  "name": "Trantor",
+  "timestamp": "06/02/22 16:04:23",
+  "score": 40
+}

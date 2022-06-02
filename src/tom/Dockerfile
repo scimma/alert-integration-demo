@@ -21,3 +21,9 @@ WORKDIR /home/worker/alerts_demo
 USER root
 RUN chown 1000:1000 /tmp
 USER worker
+
+## TODO: move to requirements.txt
+RUN pip install --user hop-client
+
+## TODO: remove this line:
+COPY --chown=worker:worker alerts_demo/ /home/worker/alerts_demo/

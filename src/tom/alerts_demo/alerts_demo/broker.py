@@ -3,6 +3,10 @@ from tom_alerts.models import BrokerQuery
 from tom_targets.models import Target
 from django import forms
 import requests
+import json
+from hop import stream, io
+from hop.subscribe import print_message
+from hop import models
 
 broker_url = 'https://gist.githubusercontent.com/mgdaily/f5dfb4047aaeb393bf1996f0823e1064/raw/5e6a6142ff77e7eb783892f1d1d01b13489032cc/example_broker_data.json'
 
@@ -16,10 +20,33 @@ class AlertsDemoBroker(GenericBroker):
     form = AlertsDemoBrokerForm
 
     def fetch_alerts(self, parameters):
-        response = requests.get(broker_url)
-        response.raise_for_status()
-        test_alerts = response.json()
-        return iter([alert for alert in test_alerts if alert['name'] == parameters['target_name']])
+        # response = requests.get(broker_url)
+        # response.raise_for_status()
+        # test_alerts = response.json()
+        # return iter([alert for alert in test_alerts if alert['name'] == parameters['target_name']])
+
+        hop_kafka_url = 'kafka://kafka.scimma.org/circuses-demo.dev_tom'
+        start_at = io.StartPosition.EARLIEST
+        stream = io.Stream(auth=True, start_at=start_at, until_eos=True)
+        alerts = []
+        with stream.open(hop_kafka_url, "r") as s:
+            for message in s:
+                print('\n\n')
+                print_message(message, json_dump=False)
+                try:
+                    ## Copying pattern from hop.subscribe.print_message()
+                    if isinstance(message, models.MessageModel):
+                        alert = json.loads(message.asdict())
+                    else:
+                        alert = json.loads(message)
+                    if 'type' in alert and alert['type'] == 'alerts-integration-demo':
+                        alerts.append(alert)
+                    else:
+                        print('Skipping invalid alert type.')
+                        continue
+                except:
+                    print('ERROR: Failed to parse message.')
+        return iter([alert for alert in alerts if alert['name'] == parameters['target_name']])
 
     def to_generic_alert(self, alert):
         return GenericAlert(
