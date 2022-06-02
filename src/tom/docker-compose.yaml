@@ -7,6 +7,7 @@ networks:
 volumes:
   postgres: {}
   waitforit: {}
+  hopauth: {}
 
 services:
   db:
@@ -41,7 +42,7 @@ services:
     volumes:
       - waitforit:/tmp
   alert-demo-init-django-migrate:
-    image: alert-tom
+    image: registry.gitlab.com/antares-at-ncsa/kubernetes/scimma-tom-demo
     build:
       context: .
     env_file: .env
@@ -63,7 +64,7 @@ services:
       - ./alerts_demo:/home/worker/alerts_demo
       - waitforit:/tmp
   alert-demo-init-django-createsuperuser:
-    image: alert-tom
+    image: registry.gitlab.com/antares-at-ncsa/kubernetes/scimma-tom-demo
     build:
       context: .
     env_file: .env
@@ -85,8 +86,27 @@ services:
     volumes:
       - ./alerts_demo:/home/worker/alerts_demo
       - waitforit:/tmp
+  alert-demo-init-hop-auth:
+    image: ubuntu:20.04
+    depends_on:
+      - db
+      - alert-demo-init-db
+      - alert-demo-init-django-migrate
+      - alert-demo-init-django-createsuperuser
+    networks:
+      - internal
+    command:
+      - '/bin/bash'
+      - '-c'
+      - >
+        bash /tmp/copy_auth.sh && touch /tmp/hop_auth_ready
+    volumes:
+      - ./auth.toml:/tmp/auth.toml:ro
+      - ./alerts_demo/copy_auth.sh:/tmp/copy_auth.sh:ro
+      - waitforit:/tmp
+      - hopauth:/home/worker/.config/hop
   alert-demo:
-    image: alert-tom
+    image: registry.gitlab.com/antares-at-ncsa/kubernetes/scimma-tom-demo
     build:
       context: .
     env_file: .env
@@ -103,11 +123,12 @@ services:
       - '/bin/bash'
       - '-c'
       - >
-        while [[ ! -f /tmp/superuser_created ]]; do
-          echo waiting for createsuperuser...;
+        while [[ ! -f /tmp/hop_auth_ready ]]; do
+          echo waiting for hop_auth_ready...;
           sleep 2;
         done;
         python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./alerts_demo:/home/worker/alerts_demo
       - waitforit:/tmp
+      - hopauth:/home/worker/.config/hop
