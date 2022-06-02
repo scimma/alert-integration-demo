@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import os
 import click
 from pathlib import Path
 
@@ -10,6 +10,8 @@ import utils
 
 elcid_model_filename = Path(__file__).absolute().parent
 elcid_model_filename /= "data/keras_model.hdf5"
+
+log = utils.get_logger(os.path.basename(__file__))
 
 default_kwargs = dict(
     known_redshift=False,
@@ -30,13 +32,13 @@ def get_classifier(**kwargs):
     return Classify(**kwargs)
 
 
-def gw170817_classification(instrument, lim_mag, num_obs, skip_every):
+def gw170817_classification(lim_mag, num_obs, skip_every):
     # get contextual information from skymap
     p_val, offset, area_fifty, area_ninety = utils.get_skymap_crossmatch_with_gw170817(
         Path(__file__).absolute().parent / 'data/bayestar.flat.fits.gz'
     )
-    lightcurve_data = utils.get_data_for_gw170817(instrument, lim_mag,
-                                                  num_obs, skip_every)
+    lightcurve_data = utils.get_gw170817_data_from_database(lim_mag, num_obs,
+                                                            skip_every)
     other_meta_data = dict(
         offset=offset,
         logprob=np.log10(p_val),
@@ -52,7 +54,7 @@ def gw170817_classification(instrument, lim_mag, num_obs, skip_every):
     return kn_predictions, other_predictions, time_steps
 
 
-def _plot(kn_res, other_res, times, instrument, lim_mag):
+def _plot(kn_res, other_res, times, lim_mag, instrument='DECam'):
     # plot the lightcurve in one panel and scores in the other
     g_band, r_band, i_band = utils.get_photometry(instrument)
     mjd_g, mjd_r, mjd_i, mag_g, mag_r, mag_i, mag_err_g, mag_err_r, mag_err_i = \
@@ -83,23 +85,22 @@ def _plot(kn_res, other_res, times, instrument, lim_mag):
 
 
 @click.command()
-@click.option('--instrument', help='Instrument observing GW170817')
 @click.option('--lim-mag', default=20.5, type=click.FLOAT,
               help="Limiting mag. Dimmer observations are skipped.")
 @click.option('--num-obs', default=10, type=click.INT,
               help="Number of observations from start")
 @click.option('--skip-every', default=1, type=click.INT, help="Skip these many obs.")
 @click.option('--plot', is_flag=True, help='Plot results/print to stdout')
-def cli(instrument, lim_mag, num_obs, skip_every, plot):
-    click.echo(f"Classification result for {instrument}")
-    kn_res, other_res, times = gw170817_classification(instrument, lim_mag,
-                                                       num_obs, skip_every)
+def cli(lim_mag, num_obs, skip_every, plot):
+    click.echo(f"Classification result for DECam")
+    kn_res, other_res, times = gw170817_classification(lim_mag, num_obs,
+                                                       skip_every)
     if not plot:
         print("Times:", times)
         print("KN score:", kn_res)
         print("Other score:", other_res)
         return
-    _plot(kn_res, other_res, times, instrument, lim_mag)
+    _plot(kn_res, other_res, times, lim_mag)
 
 
 if __name__ == '__main__':

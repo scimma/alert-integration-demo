@@ -3,17 +3,13 @@
 import os, time
 import db_utils, utils
 
-MARIADB_HOSTNAME = os.getenv('MARIADB_SERVICE_NAME')
-MARIADB_DATABASE = os.getenv('MARIADB_DATABASE')
-MARIADB_USER = os.getenv('MARIADB_USER')
-MARIADB_PASSWORD = os.getenv('MARIADB_PASSWORD')
-
 WAIT_TIME = 0.1
 
 log = utils.get_logger(os.path.basename(__file__))
 
-conn = db_utils.DbConnector(MARIADB_HOSTNAME, MARIADB_USER,
-                            MARIADB_PASSWORD, MARIADB_DATABASE)
+conn = db_utils.DbConnector(
+    db_utils.MARIADB_HOSTNAME, db_utils.MARIADB_USER,
+    db_utils.MARIADB_PASSWORD, db_utils.MARIADB_DATABASE)
 conn.open_db_connection()
 
 # get all data and sort it

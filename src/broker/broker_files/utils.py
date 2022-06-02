@@ -172,6 +172,73 @@ def get_data_for_gw170817(instrument, lim_mag, num_obs=-1, skip_every=1):
             photflag[::skip_every][:num_obs], ra, dec, objid, redshift, mwebv)
 
 
+def get_gw170817_data_from_database(lim_mag, num_obs=100, skip_every=1):
+    """Get the photometry from the photometry table in alert-integration"""
+    import db_utils
+    conn = db_utils.DbConnector(
+        db_utils.MARIADB_HOSTNAME, db_utils.MARIADB_USER,
+        db_utils.MARIADB_PASSWORD, db_utils.MARIADB_DATABASE)
+    conn.open_db_connection()
+    sql_query = """
+    SELECT time, magnitude, e_magnitude FROM photometry
+    WHERE band = %s AND magnitude <= %s
+    ORDER BY time
+    LIMIT %s"""
+    conn.cur.execute(sql_query, ('g', lim_mag, num_obs))
+    g_band_data = conn.cur.fetchall()
+    conn.cur.execute(sql_query, ('r', lim_mag, num_obs))
+    r_band_data = conn.cur.fetchall()
+    conn.cur.execute(sql_query, ('i', lim_mag, num_obs))
+    i_band_data = conn.cur.fetchall()
+    conn.close_db_connection()
+    mjd_g, mag_g, mag_err_g = np.array(g_band_data).T
+    mjd_r, mag_r, mag_err_r = np.array(r_band_data).T
+    mjd_i, mag_i, mag_err_i = np.array(i_band_data).T
+
+    flux_g, flux_r, flux_i, flux_err_g, flux_err_r, flux_err_i = get_flux_from_mag(
+        mag_g, mag_r, mag_i, mag_err_g, mag_err_r, mag_err_i
+    )
+
+    # put into a dataframe
+    mjd = np.hstack((mjd_g, mjd_r, mjd_i))  # stack times
+    gw_trigger_mjd = gw170817_coalescence_time.mjd
+    mjd -= gw_trigger_mjd
+
+    # stack data and sort based on mjd
+    flux = np.hstack((flux_g, flux_r, flux_i))
+    fluxerr = np.hstack((flux_err_g, flux_err_r, flux_err_i))
+
+    # SNANA lingo; 4096 is a detection, 6144 is the trigger
+    photflag_r = np.array(['4096'] * len(flux_r), dtype=int)
+    photflag_g = np.array(['4096'] * len(flux_g), dtype=int)
+    photflag_i = np.array(['4096'] * len(flux_i), dtype=int)
+    photflag = np.hstack((photflag_g, photflag_r, photflag_i))
+    passbands = np.array(mjd_g.size*['g'] + mjd_r.size*['r'] + mjd_i.size*['i'])
+
+    # sort all data based on time
+    sort_mask = np.argsort(mjd)
+    mjd = mjd[sort_mask]
+    flux = flux[sort_mask]
+    fluxerr = fluxerr[sort_mask]
+    passbands = passbands[sort_mask]
+    photflag = photflag[sort_mask]
+
+    # set the very first observation as the trigger
+    photflag[0] = '6144'
+
+    objid = "AT2017gfo"
+    ra = gw_170817_coord.ra.deg
+    dec = gw_170817_coord.dec.deg
+    redshift = 0.01  # not used, but to be supplied to classify
+    mwebv = 0.07  # not used, but to be supplied to classify
+
+    return (mjd[::skip_every][:num_obs], flux[::skip_every][:num_obs],
+            fluxerr[::skip_every][:num_obs], passbands[::skip_every][:num_obs],
+            photflag[::skip_every][:num_obs], ra, dec, objid, redshift, mwebv)
+
+
+
+
 def get_logger(logger_name, fmt='%(asctime)s [%(levelname)s] '
                                 '%(name)s: %(message)s'):
     logger = logging.getLogger(logger_name)
