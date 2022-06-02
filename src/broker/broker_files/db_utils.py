@@ -1,3 +1,4 @@
+import os
 import mysql.connector
 import utils
 
@@ -56,3 +57,9 @@ class DbConnector:
         )
         self.cur.execute(insert_query, data)
         self.cnx.commit()
+
+
+MARIADB_HOSTNAME = os.getenv('MARIADB_SERVICE_NAME')
+MARIADB_DATABASE = os.getenv('MARIADB_DATABASE')
+MARIADB_USER = os.getenv('MARIADB_USER')
+MARIADB_PASSWORD = os.getenv('MARIADB_PASSWORD')

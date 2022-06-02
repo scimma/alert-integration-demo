@@ -46,7 +46,7 @@ RUN . $MINICONDA_PATH/bin/activate && \
     conda update -n base -c defaults conda && \
     conda config --add channels conda-forge  && \
     conda install -y pip && \
-    conda install -c conda-forge -y astropy healpy click
+    conda install -c conda-forge -y scipy astropy healpy click
 
 RUN . $MINICONDA_PATH/bin/activate && \
     pip install -U \

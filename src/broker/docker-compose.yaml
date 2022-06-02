@@ -40,5 +40,6 @@ services:
       - '-c'
       - >
         sleep 30;
-        init_results_table.py
-        elcid.py --help
+        init_results_table.py;
+        sleep 10;
+        elcid.py --lim-mag=20.0 --num-obs=200 --skip-every=1
