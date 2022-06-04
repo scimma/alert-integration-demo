@@ -12,21 +12,15 @@
       key: django_secret_key
 - name: DB_HOST
   value: {{ .Values.postgresql.hostname }}
+- name: DB_NAME
+  value: {{ .Values.postgresql.postgresqlDatabase }}
 - name: DB_USER
-  valueFrom:
-    secretKeyRef:
-      name: tom-demo-secrets
-      key: postgresql-username
+  value: {{ .Values.postgresql.postgresqlUsername }}
 - name: DB_PASS
   valueFrom:
     secretKeyRef:
       name: tom-demo-secrets
       key: postgresql-password
-- name: DB_NAME
-  valueFrom:
-    secretKeyRef:
-      name: tom-demo-secrets
-      key: postgresql-database
 {{- if .Values.oidc.enabled }}
 - name: OIDC_SRV_DISCOVERY_URL
   value: {{ .Values.oidc.discoveryUrl | quote }}
