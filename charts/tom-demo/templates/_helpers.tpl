@@ -13,9 +13,9 @@
 - name: DB_HOST
   value: {{ .Values.postgresql.hostname }}
 - name: DB_NAME
-  value: {{ .Values.postgresql.postgresqlDatabase }}
+  value: {{ .Values.postgresql.auth.database }}
 - name: DB_USER
-  value: {{ .Values.postgresql.postgresqlUsername }}
+  value: {{ .Values.postgresql.auth.username }}
 - name: DB_PASS
   valueFrom:
     secretKeyRef:
