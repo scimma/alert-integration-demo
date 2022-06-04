@@ -41,9 +41,10 @@ securityContext:
 
 postgresql:
   hostname: "tom-demo-postgresql"
-  postgresqlUsername: alertsdemo
-  postgresqlDatabase: alertsdemo
-  existingSecret: "tom-demo-secrets"
+  auth:
+    username: alertsdemo
+    database: alertsdemo
+    existingSecret: "tom-demo-secrets"
   persistence:
     enabled: true
     existingClaim: "tom-demo-db-pvc"
