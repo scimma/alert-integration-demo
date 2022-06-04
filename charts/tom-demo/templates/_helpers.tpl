@@ -20,7 +20,7 @@
   valueFrom:
     secretKeyRef:
       name: tom-demo-secrets
-      key: postgresql-password
+      key: postgres-password
 {{- if .Values.oidc.enabled }}
 - name: OIDC_SRV_DISCOVERY_URL
   value: {{ .Values.oidc.discoveryUrl | quote }}
