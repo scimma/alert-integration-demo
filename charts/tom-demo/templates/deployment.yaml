@@ -185,9 +185,9 @@ spec:
           - name: static
             mountPath: /static
             readOnly: true
-          - name: hop-auth
-            mountPath: /
-            readOnly: true
+          - name: hop-config
+            mountPath: /home/worker/.config/hop
+            readOnly: false
       - name: nginx
         image: "{{ .Values.nginx.image.repository }}:{{ .Values.nginx.image.tag }}"
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
@@ -223,7 +223,4 @@ spec:
             readOnly: false
           - name: nginx-var-run
             mountPath: /var/run
-            readOnly: false
-          - name: hop-config
-            mountPath: /home/worker/.config/hop
             readOnly: false
