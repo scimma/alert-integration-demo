@@ -45,11 +45,12 @@ postgresql:
     username: alertsdemo
     database: alertsdemo
     existingSecret: "tom-demo-secrets"
-  persistence:
-    enabled: true
-    existingClaim: "tom-demo-db-pvc"
-    accessModes:
-    - ReadWriteMany
+  primary:
+    persistence:
+      enabled: true
+      existingClaim: "tom-demo-db-pvc"
+      accessModes:
+      - ReadWriteMany
   volumePermissions:
     enabled: true
 
