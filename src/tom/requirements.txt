@@ -3,3 +3,4 @@ psycopg2-binary
 gunicorn[gevent]
 mozilla-django-oidc
 tzdata
+hop-client

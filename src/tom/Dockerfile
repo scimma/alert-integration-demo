@@ -5,9 +5,11 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   python-is-python3   \
   && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /static && chown 1000:1000 /static
+ARG UID=1000
+RUN mkdir /static && chown $UID:$UID /static
+RUN chown $UID:$UID /tmp
 
-RUN useradd --create-home --shell /bin/bash worker --uid 1000
+RUN useradd --create-home --shell /bin/bash worker --uid $UID
 USER worker
 WORKDIR /home/worker
 ENV PATH="/home/worker/.local/bin:${PATH}"
@@ -17,13 +19,3 @@ RUN pip install --user --no-cache-dir -r requirements.txt
 
 COPY --chown=worker:worker alerts_demo/ alerts_demo/
 WORKDIR /home/worker/alerts_demo
-
-USER root
-RUN chown 1000:1000 /tmp
-USER worker
-
-## TODO: move to requirements.txt
-RUN pip install --user hop-client
-
-## TODO: remove this line:
-COPY --chown=worker:worker alerts_demo/ /home/worker/alerts_demo/
