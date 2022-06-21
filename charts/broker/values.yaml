@@ -1,7 +1,41 @@
-deployment:
+classifier:
+  replicas: 1
+  command: "sleep 1000d"
   image:
-    repository: "docker.io/menanteau/deep_broker"
+    repository: "registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker"
     tag: "latest"
     pullPolicy: "Always"
-    command: "sleep 700d"
-  replicas: 1
+sourceDataPublisher:
+  command: "sleep 1000d"
+sourceDataSubscriber:
+  command: "sleep 1000d"
+alertDataPublisher:
+  command: "sleep 1000d"
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1006
+  runAsGroup: 1003
+  username: broker
+
+## ref: https://github.com/bitnami/charts/tree/master/bitnami/mariadb/#installing-the-chart
+## ref: https://github.com/helm/charts/blob/master/stable/mariadb/values-production.yaml
+mariadb:
+  fullnameOverride: "broker-db"
+  auth:
+    ## The secret has to contain the keys mariadb-root-password, mariadb-replication-password and mariadb-password
+    existingSecret: "broker-secrets"
+    username: broker
+    database: broker
+  primary:
+    persistence:
+      enabled: false
+  image:
+    debug: false
+  volumePermissions:
+    enabled: false
+
