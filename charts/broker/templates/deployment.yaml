@@ -28,7 +28,10 @@ spec:
       ## new alerts that it stores in the database.
       - name: classifier
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
-        command: {{ .Values.classifier.command }}
+        command:
+        - '/bin/bash'
+        - '-c'
+        - '{{ .Values.classifier.command }}'
         env:
           {{- include "broker.backendEnv" . | nindent 10 }}
 ---
@@ -83,7 +86,10 @@ spec:
       ## hopskotch topic, simulating an MMA alert source
       - name: source-data-publisher
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
-        command: {{ .Values.sourceDataPublisher.command }}
+        command:
+        - '/bin/bash'
+        - '-c'
+        - '{{ .Values.sourceDataPublisher.command }}'
         volumeMounts:
         - name: hop-config
           mountPath: /home/{{ .Values.securityContext.username }}/.config/hop
@@ -147,7 +153,10 @@ spec:
       ## topic into the broker database
       - name: source-data-subscriber
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
-        command: {{ .Values.sourceDataSubscriber.command }}
+        command:
+        - '/bin/bash'
+        - '-c'
+        - '{{ .Values.sourceDataSubscriber.command }}'
         volumeMounts:
         - name: hop-config
           mountPath: /home/{{ .Values.securityContext.username }}/.config/hop
@@ -213,7 +222,10 @@ spec:
       ## classifier and publishes them to the broker's alert stream via hopskotch
       - name: broker-alert-publisher
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
-        command: {{ .Values.alertDataPublisher.command }}
+        command:
+        - '/bin/bash'
+        - '-c'
+        - '{{ .Values.alertDataPublisher.command }}'
         volumeMounts:
         - name: hop-config
           mountPath: /home/{{ .Values.securityContext.username }}/.config/hop
