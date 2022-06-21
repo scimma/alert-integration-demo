@@ -46,7 +46,7 @@ RUN . $MINICONDA_PATH/bin/activate && \
     conda update -n base -c defaults conda && \
     conda config --add channels conda-forge  && \
     conda install -y pip && \
-    conda install -c conda-forge -y scipy astropy healpy click
+    conda install -c conda-forge -y scipy=1.8.0 astropy healpy click
 
 RUN . $MINICONDA_PATH/bin/activate && \
     pip install -U \
@@ -54,6 +54,7 @@ RUN . $MINICONDA_PATH/bin/activate && \
     ligo.skymap \
     keras-tcn==3.2.1 \
     git+https://github.com/deepchatterjeeligo/astrorapid.git@ab8582e17015a55b9b3528a7dc320a3cfaf7d250
+
 
 # Include Deep's scripts into the image
 #RUN mkdir $HOME/broker_files
