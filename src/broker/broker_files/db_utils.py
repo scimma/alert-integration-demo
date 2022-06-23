@@ -6,9 +6,7 @@ import utils
 log = utils.get_logger(__name__)
 
 class DbConnector:
-
-    photometry_table_cols = set(
-        {'time', 'magnitude', 'e_magnitude', 'band'})
+    photometry_table_cols = {'time', 'magnitude', 'e_magnitude', 'band'}
     result_table_cols = {'time', 'kn_score', 'other_score'}
 
     def __init__(self, mysql_host, mysql_user, mysql_password, mysql_database):

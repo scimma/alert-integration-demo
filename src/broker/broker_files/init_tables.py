@@ -11,11 +11,14 @@ conn.open_db_connection()
 log.info("Creating photometry table...")
 create_phot_table_query = """
 CREATE OR REPLACE TABLE photometry(
-    id int(5) NOT NULL AUTO_INCREMENT,
-    time FLOAT NOT NULL,
-    magnitude FLOAT NOT NULL,
-    e_magnitude FLOAT NOT NULL,
-    band CHAR(1) NOT NULL, PRIMARY KEY(id)
+    `id` int(5) NOT NULL AUTO_INCREMENT,
+    `candidate` VARCHAR(10) NOT NULL DEFAULT 'GW170817',
+    `ra` FLOAT NOT NULL DEFAULT 197.45037,
+    `dec` FLOAT NOT NULL DEFAULT -23.38148,
+    `time` FLOAT NOT NULL,
+    `magnitude` FLOAT NOT NULL,
+    `e_magnitude` FLOAT NOT NULL,
+    `band` CHAR(1) NOT NULL, PRIMARY KEY(`id`)
 )
 """
 conn.cur.execute(create_phot_table_query)
