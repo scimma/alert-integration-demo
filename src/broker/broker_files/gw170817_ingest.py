@@ -3,7 +3,7 @@
 import os, time
 import db_utils, utils
 
-WAIT_TIME = 0.1
+WAIT_TIME = 0.05
 
 log = utils.get_logger(os.path.basename(__file__))
 

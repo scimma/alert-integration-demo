@@ -1,5 +1,6 @@
 import os
 import mysql.connector
+import numpy as np
 import utils
 
 log = utils.get_logger(__name__)
@@ -8,6 +9,7 @@ class DbConnector:
 
     photometry_table_cols = set(
         {'time', 'magnitude', 'e_magnitude', 'band'})
+    result_table_cols = {'time', 'kn_score', 'other_score'}
 
     def __init__(self, mysql_host, mysql_user, mysql_password, mysql_database):
         self.host = mysql_host
@@ -57,6 +59,30 @@ class DbConnector:
         )
         self.cur.execute(insert_query, data)
         self.cnx.commit()
+    
+
+    def insert_results_data(self, data):
+        assert self.cnx, "No database connection"
+        insert_query = (
+            "INSERT INTO results "
+            "(time, kn_score, other_score) "
+            "VALUES (%(time)s, %(kn_score)s, %(other_score)s)"
+        )
+        if isinstance(data, list):
+            for d in data:
+                self.cur.execute(insert_query, d)
+        else:
+            self.cur.execute(insert_query, data)
+        self.cnx.commit()
+
+
+    def get_results_data(self):
+        assert self.cnx, "No database connection"
+        select_query = "SELECT time, kn_score, other_score FROM results"
+        self.cur.execute(select_query)
+        data = self.cur.fetchall()
+        # cast as numpy array and return
+        return np.array(data)
 
 
 MARIADB_HOSTNAME = os.getenv('MARIADB_SERVICE_NAME')

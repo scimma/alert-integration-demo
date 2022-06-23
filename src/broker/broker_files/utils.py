@@ -136,8 +136,8 @@ def get_data_for_gw170817(instrument, lim_mag, num_obs=-1, skip_every=1):
 
     # put into a dataframe
     mjd = np.hstack((mjd_g, mjd_r, mjd_i))  # stack times
-    gw_trigger_mjd = gw170817_coalescence_time.mjd
-    mjd -= gw_trigger_mjd
+    # gw_trigger_mjd = gw170817_coalescence_time.mjd
+    # mjd -= gw_trigger_mjd
 
     # stack data and sort based on mjd
     flux = np.hstack((flux_g, flux_r, flux_i))
@@ -201,8 +201,8 @@ def get_gw170817_data_from_database(lim_mag, num_obs=100, skip_every=1):
 
     # put into a dataframe
     mjd = np.hstack((mjd_g, mjd_r, mjd_i))  # stack times
-    gw_trigger_mjd = gw170817_coalescence_time.mjd
-    mjd -= gw_trigger_mjd
+    # gw_trigger_mjd = gw170817_coalescence_time.mjd
+    # mjd -= gw_trigger_mjd
 
     # stack data and sort based on mjd
     flux = np.hstack((flux_g, flux_r, flux_i))

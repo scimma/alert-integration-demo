@@ -39,7 +39,11 @@ services:
       - '/bin/bash'
       - '-c'
       - >
-        sleep 30;
+        sleep 20;
         init_results_table.py;
-        sleep 10;
-        elcid.py --lim-mag=20.0 --num-obs=200 --skip-every=1
+        sleep 5;
+        for ii in {1..10}; do
+          sleep 1;
+          echo RUNNING CLASSIFIER;
+          elcid.py --lim-mag=21.0 --max-num-obs=3000 --skip-every=10 --db-write;
+        done

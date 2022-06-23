@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 from astrorapid import Classify
 
-import utils
+import db_utils, utils
 
 elcid_model_filename = Path(__file__).absolute().parent
 elcid_model_filename /= "data/keras_model.hdf5"
@@ -87,20 +87,56 @@ def _plot(kn_res, other_res, times, lim_mag, instrument='DECam'):
 @click.command()
 @click.option('--lim-mag', default=20.5, type=click.FLOAT,
               help="Limiting mag. Dimmer observations are skipped.")
-@click.option('--num-obs', default=10, type=click.INT,
+@click.option('--max-num-obs', default=10, type=click.INT,
               help="Number of observations from start")
 @click.option('--skip-every', default=1, type=click.INT, help="Skip these many obs.")
 @click.option('--plot', is_flag=True, help='Plot results/print to stdout')
-def cli(lim_mag, num_obs, skip_every, plot):
-    click.echo(f"Classification result for DECam")
-    kn_res, other_res, times = gw170817_classification(lim_mag, num_obs,
+@click.option('--db-write', is_flag=True,
+              help="Write results to database")
+def cli(lim_mag, max_num_obs, skip_every, plot, db_write):
+    kn_res, other_res, times = gw170817_classification(lim_mag, max_num_obs,
                                                        skip_every)
-    if not plot:
-        print("Times:", times)
-        print("KN score:", kn_res)
-        print("Other score:", other_res)
+    if plot:
+        _plot(kn_res, other_res, times, lim_mag)
         return
-    _plot(kn_res, other_res, times, lim_mag)
+
+    if db_write:
+        conn = db_utils.DbConnector(
+            db_utils.MARIADB_HOSTNAME, db_utils.MARIADB_USER,
+            db_utils.MARIADB_PASSWORD, db_utils.MARIADB_DATABASE)
+        conn.open_db_connection()
+        # fetch existing results and append
+        # and write new results based on next time steps
+        old_results = conn.get_results_data()
+        
+        data = []
+        if old_results.size == 0:
+            for time, kn_score, other_score in zip(times, kn_res, other_res):
+                data.append(
+                    {'time': float(time), 'kn_score': float(kn_score),
+                     'other_score': float(other_score)}
+                )
+        else:
+            # get the last entered time
+            max_time_in_results_table = np.max(old_results.T[0])
+            mask = times > max_time_in_results_table
+
+            relevant_times = times[mask]
+            relevant_kn_score = kn_res[mask]
+            relevant_other_score = other_res[mask]
+            for time, kn_score, other_score in zip(relevant_times,
+                                                   relevant_kn_score,
+                                                   relevant_other_score):
+                data.append(
+                    {'time': float(time), 'kn_score': float(kn_score),
+                     'other_score': float(other_score)}
+                )
+        conn.insert_results_data(data)
+        conn.close_db_connection()
+        return
+    print("Times:", times)
+    print("KN score:", kn_res)
+    print("Other score:", other_res)
 
 
 if __name__ == '__main__':
