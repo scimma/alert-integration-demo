@@ -26,6 +26,7 @@ spec:
       ## Apply database migrations
       - name: db-migration
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
+        imagePullPolicy: {{ .Values.classifier.image.imagePullPolicy }}
         command:
         - '/bin/bash'
         - '-c'
@@ -35,6 +36,7 @@ spec:
       ## new alerts that it stores in the database.
       - name: classifier
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
+        imagePullPolicy: {{ .Values.classifier.image.imagePullPolicy }}
         command:
         - '/bin/bash'
         - '-c'
@@ -79,6 +81,7 @@ spec:
       ## Apply database migrations
       - name: db-migration
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
+        imagePullPolicy: {{ .Values.classifier.image.imagePullPolicy }}
         command:
         - '/bin/bash'
         - '-c'
@@ -107,6 +110,7 @@ spec:
       ## topic into the broker database
       - name: source-data-ingest
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
+        imagePullPolicy: {{ .Values.classifier.image.imagePullPolicy }}
         command:
         - '/bin/bash'
         - '-c'
@@ -176,6 +180,7 @@ spec:
       ## classifier and publishes them to the broker's alert stream via hopskotch
       - name: broker-alert-publisher
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
+        imagePullPolicy: {{ .Values.classifier.image.imagePullPolicy }}
         command:
         - '/bin/bash'
         - '-c'
@@ -238,6 +243,7 @@ spec:
       ## hopskotch topic, simulating an MMA alert source
       - name: source-data-publisher
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
+        imagePullPolicy: {{ .Values.classifier.image.imagePullPolicy }}
         command:
         - '/bin/bash'
         - '-c'
