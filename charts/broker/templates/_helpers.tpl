@@ -11,7 +11,7 @@
       name: {{ .Values.mariadb.auth.existingSecret | quote }}
       key: "mariadb-password"
 - name: INGEST_WAIT_TIME
-  value: {{ .Values.sourceDataIngest.ingestWaitTime }}
+  value: {{ .Values.sourceDataIngest.ingestWaitTime | quote }}
 - name: CLASSIFY_WAIT_TIME
-  value: {{ .Values.classifier.waitTime }}
+  value: {{ .Values.classifier.waitTime | quote }}
 {{- end -}}
