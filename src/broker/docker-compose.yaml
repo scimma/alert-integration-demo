@@ -1,64 +1,89 @@
+version: '3'
+
+networks:
+  internal:
+    external: false
+
 volumes:
-  broker_files: {}
+  mariadb: {}
   waitforit: {}
+  # hopauth: {}
 
 services:
-  my-mariadb:
+  db:
     image: mariadb:10
-    restart: always
+    restart: unless-stopped
     env_file: .env
     ports:
-      - 8080:8080
       - 3306:3306
-
-  deep_broker:
+    volumes:
+      - mariadb:/var/lib/mysql
+  db-ready:
+    image: busybox:1.31
+    depends_on:
+    - db
+    #container_name: alerts-demo-db-check
+    volumes:
+      - waitforit:/tmp
+    command: 
+    - 'sh'
+    - '-c'
+    - 'while ! nc -z db 3306; do sleep 1; printf "-"; done; touch /tmp/db_ready;'
+  migration:
     image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
     build: ./
     depends_on:
-      - my-mariadb
-    container_name: deep_broker
+    - db
+    #container_name: alerts-demo-migration
+    env_file: .env
+    volumes:
+      - waitforit:/tmp
+    command:
+      - '/bin/bash'
+      - '-c'
+      - >
+        while [[ ! -f /tmp/db_ready ]]; do
+          echo waiting for database...;
+          sleep 2;
+        done;
+        python init_tables.py && python init_results_table.py && touch /tmp/migration_complete
+  ingest:
+    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
+    build: ./
+    depends_on:
+      - db
+      - migration
+    #container_name: alerts-demo-ingest
+    env_file: .env
+    volumes:
+      - waitforit:/tmp
+      # - ./broker_files:/home/broker/broker_files
+    command:
+      - '/bin/bash'
+      - '-c'
+      - >
+        while [[ ! -f /tmp/migration_complete ]]; do
+          echo waiting for database migrations...;
+          sleep 2;
+        done;
+        echo "Starting data ingest..." && python gw170817_ingest.py
+  classifier:
+    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
+    build: ./
+    depends_on:
+      - db
+      - migration
+    #container_name: alerts-demo-classifier
+    volumes:
+      - waitforit:/tmp
+      # - ./broker_files:/home/broker/broker_files
     env_file: .env
     command:
       - '/bin/bash'
       - '-c'
       - >
-        sleep 5;
-        init_tables.py;
-        sleep 1;
-        gw170817_ingest.py
-
-  gw170817_classifier:
-    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
-    build: ./
-    depends_on:
-      - my-mariadb
-      - deep_broker
-    container_name: gw170817_classifier
-    env_file: .env
-    command:
-      - '/bin/bash'
-      - '-c'
-      - >
-        sleep 20;
-        init_results_table.py;
-        sleep 5;
-        for ii in {1..10}; do
-          sleep 1;
-          echo RUNNING CLASSIFIER;
-          elcid.py --lim-mag=21.0 --max-num-obs=3000 --skip-every=10 --db-write;
-        done
-
-  push-results-to-hop:
-    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
-    build: ./
-    depends_on:
-      - my-mariadb
-      - gw170817_classifier
-    container_name: push-results-to-hop
-    env_file: .env
-    command:
-      - '/bin/bash'
-      - '-c'
-      - >
-        sleep 50;
-        push-results-to-hop.py
+        while [[ ! -f /tmp/migration_complete ]]; do
+          echo waiting for database migrations...;
+          sleep 2;
+        done;
+        echo "Starting classifier..." && python classify.py --lim-mag=21.0 --max-num-obs=3000 --skip-every=10;

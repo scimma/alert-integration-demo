@@ -3,11 +3,12 @@ import mysql.connector
 import numpy as np
 import utils
 
+
 log = utils.get_logger(__name__)
 
 class DbConnector:
-    photometry_table_cols = {'time', 'magnitude', 'e_magnitude', 'band'}
-    result_table_cols = {'time', 'kn_score', 'other_score'}
+    photometry_table_cols = {'time', 'magnitude', 'e_magnitude', 'band', 'candidate', 'ra', 'dec'}
+    result_table_cols = {'time', 'kn_score', 'other_score', 'candidate', 'ra', 'dec'}
 
     def __init__(self, mysql_host, mysql_user, mysql_password, mysql_database):
         self.host = mysql_host
@@ -29,7 +30,7 @@ class DbConnector:
             )
             # Get database cursor object
             self.cur = self.cnx.cursor()
-            log.info("Opened database connection")
+            # log.info("Opened database connection")
 
     def close_db_connection(self):
         if self.cnx != None and self.cur != None:
@@ -40,7 +41,7 @@ class DbConnector:
                 self.cnx.close()
                 self.cur = None
                 self.cnx = None
-                log.info("Closed database connection")
+                # log.info("Closed database connection")
             except Exception as e:
                 error = str(e).strip()
                 self.cur = None
@@ -50,27 +51,66 @@ class DbConnector:
     def insert_photometry_data(self, data):
         assert self.cnx, "No database connection"
         assert set(data) - self.photometry_table_cols == set()
-        insert_query = (
-            "INSERT INTO photometry "
-            "(time, magnitude, e_magnitude, band) "
-            "VALUES (%(time)s, %(magnitude)s, %(e_magnitude)s, %(band)s)"
+        # log.info(f'''insert_photometry_data data: {data}''')
+        insert_query = ('''
+            INSERT INTO photometry (
+                `time`,
+                `magnitude`,
+                `e_magnitude`,
+                `band`,
+                `candidate`,
+                `ra`,
+                `dec`
+            ) VALUES (
+                %(time)s,
+                %(magnitude)s,
+                %(e_magnitude)s,
+                %(band)s,
+                %(candidate)s,
+                %(ra)s,
+                %(dec)s
+            )
+        '''
         )
         self.cur.execute(insert_query, data)
         self.cnx.commit()
-    
+
+
+    def get_photometry_latest_id(self):
+        assert self.cnx, "No database connection"
+        select_query = '''
+            SELECT id FROM photometry ORDER BY id DESC
+        '''
+        self.cur.execute(select_query)
+        id = self.cur.fetchone()
+        return id[0]
+
 
     def insert_results_data(self, data):
         assert self.cnx, "No database connection"
-        insert_query = (
-            "INSERT INTO results "
-            "(time, kn_score, other_score) "
-            "VALUES (%(time)s, %(kn_score)s, %(other_score)s)"
-        )
-        if isinstance(data, list):
-            for d in data:
-                self.cur.execute(insert_query, d)
-        else:
-            self.cur.execute(insert_query, data)
+        insert_query = ('''
+            INSERT INTO results (
+                `time`,
+                `kn_score`,
+                `other_score`,
+                `candidate`,
+                `ra`,
+                `dec`,
+                `uuid`
+            ) VALUES (
+                %(time)s,
+                %(kn_score)s,
+                %(other_score)s,
+                %(candidate)s,
+                %(ra)s,
+                %(dec)s,
+                %(uuid)s
+            )
+        ''')
+        if not isinstance(data, list):
+            data = [data]
+        for datum in data:
+            self.cur.execute(insert_query, datum)
         self.cnx.commit()
 
 

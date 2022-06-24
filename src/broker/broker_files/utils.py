@@ -8,6 +8,11 @@ from astropy.time import Time
 from ligo.skymap.io import read_sky_map
 from ligo.skymap.postprocess import crossmatch
 import numpy as np
+import uuid
+
+
+def generate_uuid():
+    return str(uuid.uuid4()).replace("-", "")
 
 
 with open(pathlib.Path(__file__).absolute().parent / 'data/GW170817.json') as f:
@@ -52,8 +57,7 @@ def get_photometry(instrument):
     try:
         prop = _instrument_property_assoc[instrument]
     except KeyError:
-        raise NotImplementedError("Supported instruments: ",
-                                  _instrument_property_assoc.keys())
+        raise NotImplementedError("Supported instruments: ", _instrument_property_assoc.keys())
     # FIXME: assume bands in g, r, i
     # match band string names, not being an upperlimit, and MJD after
     # merger time

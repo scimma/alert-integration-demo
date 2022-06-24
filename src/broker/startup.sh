@@ -23,5 +23,7 @@ export PATH=${PATH}:${HOME}/broker_files
 echo "Starting conda env from: ${MINICONDA_PATH}"
 . ${MINICONDA_PATH}/bin/activate base
 
+cd ${HOME}/broker_files
+
 args=("$@")
 exec "${args[@]}"

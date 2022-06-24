@@ -1,14 +1,16 @@
 classifier:
   replicas: 1
-  command: "sleep 1000d"
+  command: 'echo "Starting classifier..." && python classify.py --lim-mag=21.0 --max-num-obs=3000 --skip-every=10;'
+  waitTime: 10
   image:
     repository: "registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker"
     tag: "latest"
     pullPolicy: "Always"
 sourceDataPublisher:
   command: "sleep 1000d"
-sourceDataSubscriber:
-  command: "sleep 1000d"
+sourceDataIngest:
+  command: 'echo "Starting data ingest..." && python gw170817_ingest.py'
+  ingestWaitTime: 0.01
 alertDataPublisher:
   command: "sleep 1000d"
 

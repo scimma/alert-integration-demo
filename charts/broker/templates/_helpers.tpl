@@ -10,4 +10,8 @@
     secretKeyRef:
       name: {{ .Values.mariadb.auth.existingSecret | quote }}
       key: "mariadb-password"
+- name: INGEST_WAIT_TIME
+  value: {{ .Values.sourceDataIngest.ingestWaitTime }}
+- name: CLASSIFY_WAIT_TIME
+  value: {{ .Values.classifier.waitTime }}
 {{- end -}}
