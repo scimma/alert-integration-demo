@@ -31,6 +31,8 @@ spec:
         - '/bin/bash'
         - '-c'
         - 'python init_results_table.py'
+        env:
+          {{- include "broker.backendEnv" . | nindent 10 }}
       containers:
       ## The classifier reads alerts from the database, processes them, and generates
       ## new alerts that it stores in the database.
@@ -86,6 +88,8 @@ spec:
         - '/bin/bash'
         - '-c'
         - 'python init_tables.py'
+        env:
+          {{- include "broker.backendEnv" . | nindent 10 }}
       ## The hop auth.toml file must be chmod to 0600
       - image: ubuntu:20.04
         name: init-hop-auth
