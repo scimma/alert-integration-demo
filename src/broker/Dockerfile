@@ -14,7 +14,7 @@ ARG UID_NUMBER=1006
 RUN apt-get update --fix-missing && \
     DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends tzdata && \
-    apt-get install -y build-essential wget emacs git
+    apt-get install -y build-essential wget emacs git librdkafka-dev
 
 # Add $BROKER_USER as user and create groups wheel and spt
 RUN useradd -ms /bin/bash -u ${UID_NUMBER} $BROKER_USER && \
@@ -53,6 +53,7 @@ RUN . $MINICONDA_PATH/bin/activate && \
     mysql-connector-python-rf \
     ligo.skymap \
     keras-tcn==3.2.1 \
+    hop-client \
     git+https://github.com/deepchatterjeeligo/astrorapid.git@ab8582e17015a55b9b3528a7dc320a3cfaf7d250
 
 

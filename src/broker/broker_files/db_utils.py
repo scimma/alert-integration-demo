@@ -76,11 +76,10 @@ class DbConnector:
 
     def get_results_data(self):
         assert self.cnx, "No database connection"
-        select_query = "SELECT time, kn_score, other_score FROM results"
+        select_query = "SELECT id, time, kn_score, other_score FROM results"
         self.cur.execute(select_query)
         data = self.cur.fetchall()
-        # cast as numpy array and return
-        return np.array(data)
+        return data
 
 
 MARIADB_HOSTNAME = os.getenv('MARIADB_SERVICE_NAME')

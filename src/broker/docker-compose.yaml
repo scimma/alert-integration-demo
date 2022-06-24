@@ -47,3 +47,18 @@ services:
           echo RUNNING CLASSIFIER;
           elcid.py --lim-mag=21.0 --max-num-obs=3000 --skip-every=10 --db-write;
         done
+
+  push-results-to-hop:
+    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
+    build: ./
+    depends_on:
+      - my-mariadb
+      - gw170817_classifier
+    container_name: push-results-to-hop
+    env_file: .env
+    command:
+      - '/bin/bash'
+      - '-c'
+      - >
+        sleep 50;
+        push-results-to-hop.py
