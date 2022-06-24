@@ -27,7 +27,7 @@ spec:
       - name: db-migration
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
         imagePullPolicy: {{ .Values.classifier.image.imagePullPolicy }}
-        command:
+        args:
         - '/bin/bash'
         - '-c'
         - 'python init_results_table.py'
@@ -37,7 +37,7 @@ spec:
       - name: classifier
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
         imagePullPolicy: {{ .Values.classifier.image.imagePullPolicy }}
-        command:
+        args:
         - '/bin/bash'
         - '-c'
         - '{{ .Values.classifier.command }}'
@@ -82,7 +82,7 @@ spec:
       - name: db-migration
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
         imagePullPolicy: {{ .Values.classifier.image.imagePullPolicy }}
-        command:
+        args:
         - '/bin/bash'
         - '-c'
         - 'python init_tables.py'
@@ -111,7 +111,7 @@ spec:
       - name: source-data-ingest
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
         imagePullPolicy: {{ .Values.classifier.image.imagePullPolicy }}
-        command:
+        args:
         - '/bin/bash'
         - '-c'
         - '{{ .Values.sourceDataIngest.command }}'
