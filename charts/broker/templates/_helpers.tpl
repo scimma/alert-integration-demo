@@ -14,4 +14,8 @@
   value: {{ .Values.sourceDataIngest.ingestWaitTime | quote }}
 - name: CLASSIFY_WAIT_TIME
   value: {{ .Values.classifier.waitTime | quote }}
+- name: HOP_URL_SOURCE
+  value: {{ .Values.sourceDataPublisher.hopUrl | quote }}
+- name: HOP_URL_RESULTS
+  value: {{ .Values.alertDataPublisher.hopUrl | quote }}
 {{- end -}}
