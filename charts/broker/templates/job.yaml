@@ -6,6 +6,7 @@ spec:
   backoffLimit: 2
   template:
     spec:
+      restartPolicy: "OnFailure"
       volumes:
       - name: copy-hop-auth
         configMap:
