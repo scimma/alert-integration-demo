@@ -248,7 +248,7 @@ spec:
       - name: source-data-publisher
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
         imagePullPolicy: {{ .Values.classifier.image.imagePullPolicy }}
-        command:
+        args:
         - '/bin/bash'
         - '-c'
         - '{{ .Values.sourceDataPublisher.command }}'
