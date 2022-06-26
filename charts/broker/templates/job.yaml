@@ -5,6 +5,9 @@ metadata:
 spec:
   backoffLimit: 2
   template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-source-data-publisher
     spec:
       restartPolicy: "OnFailure"
       volumes:
