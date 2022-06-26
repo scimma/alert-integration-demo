@@ -1,6 +1,6 @@
 classifier:
   replicas: 1
-  command: 'echo "Starting classifier..." && python classify.py --lim-mag=21.0 --max-num-obs=3000 --skip-every=10;'
+  command: 'python classify.py --lim-mag=21.0 --max-num-obs=3000 --skip-every=10'
   waitTime: 10
   image:
     repository: "registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker"
@@ -9,9 +9,10 @@ classifier:
 sourceDataPublisher:
   command: "python publish_source_data.py"
   hopUrl: 'kafka://kafka.scimma.org/circuses-demo.alert-integration-source'
+  waitTime: 1.0
 sourceDataIngest:
   command: 'python source_data_ingest.py'
-  ingestWaitTime: 0.01
+  waitTime: 0.1
 alertDataPublisher:
   command: "python publish_broker_alerts.py"
   hopUrl: 'kafka://kafka.scimma.org/circuses-demo.alert-integration-results'

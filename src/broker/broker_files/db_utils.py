@@ -83,7 +83,10 @@ class DbConnector:
         '''
         self.cur.execute(select_query)
         id = self.cur.fetchone()
-        return id[0]
+        if isinstance(id, tuple) and len(id) > 0:
+            return id[0]
+        else:
+            return 0
 
 
     def insert_results_data(self, data):

@@ -7,7 +7,7 @@ networks:
 volumes:
   mariadb: {}
   waitforit: {}
-  # hopauth: {}
+  hopauth: {}
 
 services:
   db:
@@ -47,6 +47,45 @@ services:
           sleep 2;
         done;
         python init_tables.py && python init_results_table.py && touch /tmp/migration_complete
+  init-hop-auth:
+    image: ubuntu:20.04
+    depends_on:
+      - db
+      - migration
+    command:
+      - '/bin/bash'
+      - '-c'
+      - 'bash /tmp/copy_auth.sh && touch /tmp/hop_auth_ready'
+    volumes:
+      - waitforit:/tmp
+      - hopauth:/home/broker/.config/hop
+      - ./auth.toml:/tmp/auth.toml:ro
+      - ./copy_auth.sh:/tmp/copy_auth.sh:ro
+  source-publisher:
+    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
+    build: ./
+    depends_on:
+      - db
+      - migration
+    #container_name: alerts-demo-source-publisher
+    env_file: .env
+    volumes:
+      - waitforit:/tmp
+      - hopauth:/home/broker/.config/hop
+      # - ./broker_files:/home/broker/broker_files
+    command:
+      - '/bin/bash'
+      - '-c'
+      - >
+        while [[ ! -f /tmp/migration_complete ]]; do
+          echo waiting for database migrations...;
+          sleep 2;
+        done;
+        while [[ ! -f /tmp/hop_auth_ready ]]; do
+          echo waiting for hop auth provisioning...;
+          sleep 2;
+        done;
+        python publish_source_data.py
   ingest:
     image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
     build: ./
@@ -57,7 +96,8 @@ services:
     env_file: .env
     volumes:
       - waitforit:/tmp
-      # - ./broker_files:/home/broker/broker_files
+      - hopauth:/home/broker/.config/hop
+      - ./broker_files:/home/broker/broker_files
     command:
       - '/bin/bash'
       - '-c'
@@ -66,7 +106,11 @@ services:
           echo waiting for database migrations...;
           sleep 2;
         done;
-        echo "Starting data ingest..." && python gw170817_ingest.py
+        while [[ ! -f /tmp/hop_auth_ready ]]; do
+          echo waiting for hop auth provisioning...;
+          sleep 2;
+        done;
+        python source_data_ingest.py
   classifier:
     image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
     build: ./
