@@ -256,3 +256,5 @@ spec:
         - name: hop-config
           mountPath: /home/{{ .Values.securityContext.username }}/.config/hop
           readOnly: false
+        env:
+          {{- include "broker.backendEnv" . | nindent 10 }}
