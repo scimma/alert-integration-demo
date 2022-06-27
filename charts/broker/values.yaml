@@ -16,6 +16,7 @@ sourceDataIngest:
 alertDataPublisher:
   command: "python publish_broker_alerts.py"
   hopUrl: 'kafka://kafka.scimma.org/circuses-demo.alert-integration-results'
+  waitTime: 1.0
 
 securityContext:
   capabilities:

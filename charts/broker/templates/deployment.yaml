@@ -185,7 +185,7 @@ spec:
       - name: broker-alert-publisher
         image: {{ .Values.classifier.image.repository }}:{{ .Values.classifier.image.tag }}
         imagePullPolicy: {{ .Values.classifier.image.imagePullPolicy }}
-        command:
+        args:
         - '/bin/bash'
         - '-c'
         - '{{ .Values.alertDataPublisher.command }}'

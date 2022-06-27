@@ -117,9 +117,11 @@ class DbConnector:
         self.cnx.commit()
 
 
-    def get_results_data(self):
+    def get_results_data(self, min_id=0, max_id=None):
         assert self.cnx, "No database connection"
-        select_query = "SELECT id, time, kn_score, other_score FROM results"
+        select_query = f'''SELECT * FROM results WHERE id >= {min_id}'''
+        if max_id:
+            select_query += f''' AND id <= {max_id}'''
         self.cur.execute(select_query)
         data = self.cur.fetchall()
         return data
