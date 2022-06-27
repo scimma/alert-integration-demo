@@ -45,8 +45,13 @@ with stream.open(hop_kafka_url, "w") as hop_stream:
                 if id >= results_id:
                     results_id = id + 1
                 ## Publish to hop topic
-                alert_message = {
+                headers = {
+                    'sender': 'alert-integration-demo',
+                    'schema': 'scimma.alert-integration-demo/broker/v1',
+                    'time': f'{datetime.utcnow()}',
                     'id': uuid,
+                }
+                alert_message = {
                     'candidate': candidate,
                     'ra': ra,
                     'dec': dec,
@@ -54,8 +59,12 @@ with stream.open(hop_kafka_url, "w") as hop_stream:
                     'kn_score': kn_score,
                     'other_score': other_score,
                 }
-                log.info(f"Alert published: {json.dumps(alert_message)}")
-                hop_stream.write(alert_message)
+                alert = {
+                    'message': alert_message,
+                    'headers': headers,
+                }
+                log.info(f"Publishing alert: {json.dumps(alert)}")
+                hop_stream.write(alert_message, headers=headers)
                 ## Separate the alerts in time as desired
                 time.sleep(WAIT_TIME)
         except Exception as e:
