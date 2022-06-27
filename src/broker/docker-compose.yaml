@@ -14,28 +14,43 @@ services:
     image: mariadb:10
     restart: unless-stopped
     env_file: .env
+    networks:
+    - internal
     ports:
       - 3306:3306
+    container_name: db
     volumes:
       - mariadb:/var/lib/mysql
-  db-ready:
-    image: busybox:1.31
+  db-check:
+    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
+    build: ./
+    # image: busybox:1.30
+    # image: ubuntu:20.04
     depends_on:
     - db
-    #container_name: alerts-demo-db-check
+    container_name: db-check
+    env_file: .env
+    networks:
+    - internal
     volumes:
       - waitforit:/tmp
-    command: 
-    - 'sh'
-    - '-c'
-    - 'while ! nc -z db 3306; do sleep 1; printf "-"; done; touch /tmp/db_ready;'
+    command:
+      - '/bin/bash'
+      - '-c'
+      - 'python is_db_ready.py'
+    # command:
+    # - 'sh'
+    # - '-c'
+    # - 'while ! nc -z db 3306; do sleep 5; printf "-"; done; echo "Database is ready!"; touch /tmp/db_ready;'
   migration:
     image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
     build: ./
     depends_on:
     - db
-    #container_name: alerts-demo-migration
+    container_name: db-migration
     env_file: .env
+    networks:
+    - internal
     volumes:
       - waitforit:/tmp
     command:
@@ -44,7 +59,7 @@ services:
       - >
         while [[ ! -f /tmp/db_ready ]]; do
           echo waiting for database...;
-          sleep 2;
+          sleep 5;
         done;
         python init_tables.py && python init_results_table.py && touch /tmp/migration_complete
   init-hop-auth:
@@ -52,10 +67,13 @@ services:
     depends_on:
       - db
       - migration
+    container_name: init-hop-auth
     command:
       - '/bin/bash'
       - '-c'
       - 'bash /tmp/copy_auth.sh && touch /tmp/hop_auth_ready'
+    networks:
+    - internal
     volumes:
       - waitforit:/tmp
       - hopauth:/home/broker/.config/hop
@@ -67,8 +85,10 @@ services:
     depends_on:
       - db
       - migration
-    #container_name: alerts-demo-source-publisher
+    container_name: source-data-publisher
     env_file: .env
+    networks:
+    - internal
     volumes:
       - waitforit:/tmp
       - hopauth:/home/broker/.config/hop
@@ -79,21 +99,23 @@ services:
       - >
         while [[ ! -f /tmp/migration_complete ]]; do
           echo waiting for database migrations...;
-          sleep 2;
+          sleep 5;
         done;
         while [[ ! -f /tmp/hop_auth_ready ]]; do
           echo waiting for hop auth provisioning...;
-          sleep 2;
+          sleep 5;
         done;
         python publish_source_data.py
-  ingest:
+  source-ingest:
     image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
     build: ./
     depends_on:
       - db
       - migration
-    #container_name: alerts-demo-ingest
+    container_name: source-data-ingest
     env_file: .env
+    networks:
+    - internal
     volumes:
       - waitforit:/tmp
       - hopauth:/home/broker/.config/hop
@@ -104,11 +126,11 @@ services:
       - >
         while [[ ! -f /tmp/migration_complete ]]; do
           echo waiting for database migrations...;
-          sleep 2;
+          sleep 5;
         done;
         while [[ ! -f /tmp/hop_auth_ready ]]; do
           echo waiting for hop auth provisioning...;
-          sleep 2;
+          sleep 5;
         done;
         python source_data_ingest.py
   classifier:
@@ -117,17 +139,46 @@ services:
     depends_on:
       - db
       - migration
-    #container_name: alerts-demo-classifier
+    container_name: classifier
+    env_file: .env
+    networks:
+    - internal
     volumes:
       - waitforit:/tmp
       # - ./broker_files:/home/broker/broker_files
-    env_file: .env
     command:
       - '/bin/bash'
       - '-c'
       - >
         while [[ ! -f /tmp/migration_complete ]]; do
           echo waiting for database migrations...;
-          sleep 2;
+          sleep 5;
         done;
-        echo "Starting classifier..." && python classify.py --lim-mag=21.0 --max-num-obs=3000 --skip-every=10;
+        python classify.py --lim-mag=21.0 --max-num-obs=3000 --skip-every=10;
+  broker-alert-publisher:
+    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/deep_broker:latest
+    build: ./
+    depends_on:
+      - db
+      - migration
+    container_name: broker-alert-publisher
+    env_file: .env
+    networks:
+    - internal
+    volumes:
+      - waitforit:/tmp
+      - hopauth:/home/broker/.config/hop
+      # - ./broker_files:/home/broker/broker_files
+    command:
+      - '/bin/bash'
+      - '-c'
+      - >
+        while [[ ! -f /tmp/migration_complete ]]; do
+          echo waiting for database migrations...;
+          sleep 5;
+        done;
+        while [[ ! -f /tmp/hop_auth_ready ]]; do
+          echo waiting for hop auth provisioning...;
+          sleep 5;
+        done;
+        python publish_broker_alerts.py
