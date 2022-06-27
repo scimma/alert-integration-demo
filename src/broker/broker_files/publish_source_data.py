@@ -38,8 +38,8 @@ with stream.open(hop_kafka_url, "w") as hop_stream:
         }
         ## Publish to hop topic
         hop_stream.write(alert_message, headers=headers)
+        # log.info(f"Alert published: {json.dumps(alert)}")
         if num % 100 == 0:
-            log.info(f"Alert published: {json.dumps(alert)}")
             log.info("Published %s source alerts" % (num,))
         ## Separate the alerts in time as desired
         time.sleep(WAIT_TIME)

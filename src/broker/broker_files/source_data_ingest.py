@@ -19,7 +19,8 @@ with stream.open(hop_kafka_url, "r") as hop_stream:
         db_utils.MARIADB_HOSTNAME, db_utils.MARIADB_USER,
         db_utils.MARIADB_PASSWORD, db_utils.MARIADB_DATABASE)
     conn.open_db_connection()
-
+    ## Track number of ingested alerts
+    num_ingested = 0
     for message, metadata in hop_stream.read(metadata=True):
         ## Parse headers
         try:
@@ -34,13 +35,17 @@ with stream.open(hop_kafka_url, "r") as hop_stream:
             'headers': headers,
             'message': message,
         }
-        log.info(f'''Alert: {json.dumps(alert['message'])}''')
+        # log.info(f'''Alert: {json.dumps(alert['message'])}''')
         try:
             ## Insert alert data into the database
             if 'sender' in headers and 'schema' in headers \
                 and headers['sender'] == 'alert-integration-demo' \
                 and headers['schema'] == 'scimma.alert-integration-demo/source/v1':
                 conn.insert_photometry_data(message)
+                ## Log output of every 100 alerts ingested
+                num_ingested += 1
+                if num_ingested % 100 == 0:
+                    log.info(f"Ingested {num_ingested} source alerts")
             else:
                 log.info('Invalid alert message. Skipping...')
                 continue
