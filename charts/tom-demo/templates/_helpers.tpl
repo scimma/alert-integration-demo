@@ -21,6 +21,8 @@
     secretKeyRef:
       name: tom-demo-secrets
       key: postgres-password
+- name: HOP_URL_ALERTS
+  value: {{ .Values.django.hopUrl }}
 {{- if .Values.oidc.enabled }}
 - name: OIDC_SRV_DISCOVERY_URL
   value: {{ .Values.oidc.discoveryUrl | quote }}

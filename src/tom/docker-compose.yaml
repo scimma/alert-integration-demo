@@ -42,7 +42,7 @@ services:
     volumes:
       - waitforit:/tmp
   alert-demo-init-django-migrate:
-    image: registry.gitlab.com/antares-at-ncsa/kubernetes/scimma-tom-demo
+    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/scimma-tom-demo
     build:
       context: .
     env_file: .env
@@ -64,7 +64,7 @@ services:
       - ./alerts_demo:/home/worker/alerts_demo
       - waitforit:/tmp
   alert-demo-init-django-createsuperuser:
-    image: registry.gitlab.com/antares-at-ncsa/kubernetes/scimma-tom-demo
+    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/scimma-tom-demo
     build:
       context: .
     env_file: .env
@@ -106,7 +106,7 @@ services:
       - waitforit:/tmp
       - hopauth:/home/worker/.config/hop
   alert-demo:
-    image: registry.gitlab.com/antares-at-ncsa/kubernetes/scimma-tom-demo
+    image: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/scimma-tom-demo
     build:
       context: .
     env_file: .env

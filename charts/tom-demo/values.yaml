@@ -1,9 +1,10 @@
 replicas: 1
 image:
-  repository: registry.gitlab.com/antares-at-ncsa/kubernetes/scimma-tom-demo
+  repository: registry.gitlab.com/antares-at-ncsa/scimma-alerts-integration-demo/scimma-tom-demo
   tag: latest
 django:
   debug: false
+  hopUrl: 'kafka://kafka.scimma.org/circuses-demo.alert-integration-results'
   superuser:
     autocreate: true
     database: default
