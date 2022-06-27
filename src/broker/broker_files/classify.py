@@ -108,6 +108,7 @@ def cli(lim_mag, max_num_obs, skip_every):
             # and write new results based on next time steps
             old_results = conn.get_results_data()
             old_results = np.array(old_results)
+            # log.info(old_results)
             
             data = []
             if old_results.size == 0:
@@ -123,7 +124,10 @@ def cli(lim_mag, max_num_obs, skip_every):
                     })
             else:
                 # get the last entered time
-                max_time_in_results_table = np.max(old_results.T[1])
+                try:
+                    max_time_in_results_table = np.max(old_results.T[5])
+                except:
+                    max_time_in_results_table = float(old_results.T[5][-1])
                 mask = times > max_time_in_results_table
 
                 relevant_times = times[mask]
