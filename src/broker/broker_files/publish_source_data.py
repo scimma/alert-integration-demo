@@ -16,14 +16,14 @@ with stream.open(hop_kafka_url, "w") as hop_stream:
     decam_g_band, decam_r_band, decam_i_band = utils.get_photometry('DECam')
     decam_data = sorted(decam_g_band + decam_r_band + decam_i_band, key=lambda e: e['time'])
     log.info("Publishing source alerts")
-    # headers = {
-    #     'sender': 'alert-integration-demo',
-    #     'time': f'{datetime.utcnow()}',
-    #     'schema': 'scimma.alert-integration-demo/v1',
-    # }
+    headers = {
+        'sender': 'alert-integration-demo',
+        'schema': 'scimma.alert-integration-demo/source/v1',
+        'time': f'{datetime.utcnow()}',
+    }
     ## Iterate over all data points and publish them as hop messages
     for num, data in enumerate(decam_data, 1):
-        alert = {
+        alert_message = {
             'time': float(data['time']),
             'magnitude': float(data['magnitude']),
             'e_magnitude': float(data['e_magnitude']),
@@ -32,9 +32,12 @@ with stream.open(hop_kafka_url, "w") as hop_stream:
             'ra': float(utils.gw_170817_coord.ra.deg),
             'dec': float(utils.gw_170817_coord.dec.deg),
         }
+        alert = {
+            'message': alert_message,
+            'headers': headers,
+        }
         ## Publish to hop topic
-        # hop_stream.write(alert, headers=headers)
-        hop_stream.write(alert)
+        hop_stream.write(alert_message, headers=headers)
         if num % 100 == 0:
             log.info(f"Alert published: {json.dumps(alert)}")
             log.info("Published %s source alerts" % (num,))
